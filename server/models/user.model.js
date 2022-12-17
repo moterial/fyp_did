@@ -13,6 +13,20 @@ const userSchema = new Schema({
         required: true,
         minlength: 3
     },
+    walletAddress:{
+        type: String,
+    },
+    token:{
+        type: String,
+    },
+    faceImage:{
+        name: String,
+        img:
+        {
+            data: Buffer,
+            contentType: String
+        }
+    },
     email: {
         type: String,
         required: true,

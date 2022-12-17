@@ -1,23 +1,23 @@
 const router = require('express').Router();
 const User = require('../models/user.model');
+const auth = require('../middleware/auth')
 
-router.route('/').post((req, res) => {
-    const username = req.body.username;
-    //get the certificate data from the user
+//check if user is logged in before getting details of user
+router.route('/').post(auth, (req, res) => {
+    const username = req.AuthUser.username;
     User.findOne({
         username: username
     })
     .then(user => {
         if(user){
-            res.json({status: "success", message: "User found", data: user.certificate});
+            res.json({status: "success", message: "User found", user: user});
         }else{
             res.json({status: "error", message: "User not found"});
         }
     })
-
-        
-
+    .catch(err => res.status(400).json({status: "error", message: "Error: " + err}));
 })
+
 
 
 router.route('/addCertificate').post((req, res) => {

@@ -1,5 +1,7 @@
 const router = require('express').Router();
 const User = require('../models/user.model');
+const auth = require('../middleware/login')
+const util = require('../util/token');
 
 router.route('/login').post((req, res) => {
     const username = req.body.username;
@@ -10,7 +12,14 @@ router.route('/login').post((req, res) => {
     })
     .then(user => {
         if(user){
-            res.json({status: "success", message: "User logged in successfully"});
+            //generate token
+            const token = util.generateAccessToken({username: user.username});
+            res.cookie('token', token, {httpOnly: true});
+            //save token to database
+            user.token = token;
+            user.save()
+            .then(() => res.json({status: "success", message: "User logged in successfully"}))
+            
         }else{
             res.json({status: "error", message: "User not found"});
         }
