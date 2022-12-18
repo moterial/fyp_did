@@ -15,10 +15,17 @@ router.route('/login').post((req, res) => {
             //generate token
             const token = util.generateAccessToken({username: user.username});
             res.cookie('token', token, {httpOnly: true});
-            //save token to database
-            user.token = token;
-            user.save()
-            .then(() => res.json({status: "success", message: "User logged in successfully"}))
+            //update the token in the database enable upsert
+            User.findOneAndUpdate({
+                username: username
+            }, {
+                $set: {
+                    token: token
+                }
+            }, {
+                upsert: true
+            })
+            .then(() => res.json({status: "success", message: "User logged in successfully", token: token}))
             
         }else{
             res.json({status: "error", message: "User not found"});

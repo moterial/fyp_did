@@ -3,8 +3,9 @@ const User = require('../models/user.model');
 const auth = require('../middleware/auth')
 
 //check if user is logged in before getting details of user
-router.route('/').post(auth, (req, res) => {
-    const username = req.AuthUser.username;
+router.post('/',auth, (req, res) => {
+    const username = req.body.username;
+    console.log("db:",username)
     User.findOne({
         username: username
     })
@@ -17,6 +18,8 @@ router.route('/').post(auth, (req, res) => {
     })
     .catch(err => res.status(400).json({status: "error", message: "Error: " + err}));
 })
+
+
 
 
 
