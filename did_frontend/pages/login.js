@@ -8,16 +8,19 @@ import React,{ useEffect, useState} from 'react'
 
 export default function Home() {
   const [backendData, setBackendData] = useState({})
-
+  const [accountLogin, setAccountLogin] = useState(false)
+  const [faceLogin, setfaceLogin] = useState(false)
 
   useEffect(() => {
-    fetch('/api/sd')
+    fetch('/api/user/login')
       .then((res) => res.json())
       .then((data) => {
         setBackendData(data)
         console.log(data)
       })
   }, [])
+
+
 
   return (
     <>
@@ -29,36 +32,46 @@ export default function Home() {
       </Head>
       <Header/>
       <main className={styles.main}>
-      <Card maxW='md'>
-          <CardBody>
-            <Center>
-              <Image
-                src='/assets/face-id.png'
-                boxSize='200px'
-              />
-            </Center>
-            <Stack mt='6' spacing='3'>
-              <Center>
-                <Button colorScheme='teal' size='lg'>
-                  FaceID Login
-   
-                </Button>
-              </Center>
-            </Stack>
-          </CardBody>
-          <Divider />
-          <CardFooter>
-            <ButtonGroup spacing='2'>
-              <Button variant='solid' colorScheme='blue'>
-                Login by username and pw
-              </Button>
-              <Button variant='ghost' colorScheme='blue'>
-                register
-              </Button>
-            </ButtonGroup>
-          </CardFooter>
-        </Card>
+          {
+            (!accountLogin && !faceLogin)  &&
+            <Card maxW='md'>
+              <CardBody>
+                <Center>
+                  <Image
+                    src='/assets/face-id.png'
+                    boxSize='200px'
+                  />
+                </Center>
+                <Stack mt='6' spacing='3'>
+                  <Center>
+                    <Button colorScheme='teal' size='lg'>
+                      FaceID Login
+      
+                    </Button>
+                  </Center>
+                </Stack>
+              </CardBody>
+              <Divider />
+              <CardFooter>
+                <ButtonGroup spacing='2'>
+                  <Button onClick={() => setAccountLogin(true)} variant='solid' colorScheme='blue' >
+                    Login by username and pw
+                  </Button>
+                  <Button variant='ghost' colorScheme='blue'>
+                    register
+                  </Button>
+                </ButtonGroup>
+              </CardFooter>
+            </Card>
+          }
+          {
+            accountLogin  && 
+            <h1>account login</h1>
+
+          }
       </main>
     </>
+
+    
   )
 }

@@ -11,7 +11,7 @@ export default function Home() {
 
 
   useEffect(() => {
-    fetch('/api/home')
+    fetch('/api/user/login')
       .then((res) => res.json())
       .then((data) => {
         setBackendData(data)

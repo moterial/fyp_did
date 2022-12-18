@@ -5,7 +5,7 @@ const auth = require('../middleware/auth')
 //check if user is logged in before getting details of user
 router.post('/',auth, (req, res) => {
     const username = req.body.username;
-    console.log("db:",username)
+
     User.findOne({
         username: username
     })
