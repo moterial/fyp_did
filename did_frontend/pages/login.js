@@ -1,7 +1,7 @@
 import Head from 'next/head'
 import { Inter } from '@next/font/google'
 import styles from '../styles/Home.module.css'
-import { Card, CardHeader, CardBody, CardFooter,Stack,VStack,Heading,Text,Divider,ButtonGroup,Button,Image,Center} from '@chakra-ui/react'
+import { Card, CardHeader, CardBody, CardFooter,Stack,VStack,Heading,Text,Divider,ButtonGroup,Button,Image,Center,Flex,useColorModeValue,Link,Box,FormControl,FormLabel,Input,Checkbox} from '@chakra-ui/react'
 import Header from '../component/header'
 import React,{ useEffect, useState} from 'react'
 
@@ -10,15 +10,51 @@ export default function Home() {
   const [backendData, setBackendData] = useState({})
   const [accountLogin, setAccountLogin] = useState(false)
   const [faceLogin, setfaceLogin] = useState(false)
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
 
   useEffect(() => {
-    fetch('/api/user/login')
-      .then((res) => res.json())
-      .then((data) => {
-        setBackendData(data)
-        console.log(data)
-      })
+    const token = localStorage.getItem('token')
+    if(token){
+      window.location.href = '/dashboard'
+
+    }
   }, [])
+
+  const handleUsernameChange = (e) => {
+    setUsername(e.target.value)
+  }
+
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value)
+  }
+
+  function handleAccountLogin(){
+    //get the username and password from the input
+    //send the username and password to the backend
+    //if the username and password is correct, the backend will send back a token
+    //store the token in the local storage
+    //redirect to the dashboard page
+    const data = {
+      username: username,
+      password: password
+    }
+    fetch('/api/user/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+    .then((res) => res.json())
+    .then((data) => {
+      console.log(data)
+      if(data.token){
+        localStorage.setItem('token', data.token)
+        window.location.href = '/dashboard'
+      }
+    })
+  }
 
 
 
@@ -46,7 +82,6 @@ export default function Home() {
                   <Center>
                     <Button colorScheme='teal' size='lg'>
                       FaceID Login
-      
                     </Button>
                   </Center>
                 </Stack>
@@ -66,7 +101,52 @@ export default function Home() {
           }
           {
             accountLogin  && 
-            <h1>account login</h1>
+            <Flex
+              minH={'100vh'}
+              justify={'center'}
+            >
+              <Stack spacing={8}  maxW={'lg'} py={5} px={6}>
+                <Stack align={'center'}>
+                  <Heading fontSize={'4xl'}>Sign in to your account</Heading>
+                  <Text fontSize={'lg'} color={'gray.600'}>
+                    to enjoy all of our cool <Link color={'blue.400'}>features</Link> ✌️
+                  </Text>
+                </Stack>
+                <Box
+                  rounded={'lg'}
+                  bg={useColorModeValue('white', 'gray.700')}
+                  boxShadow={'lg'}
+                  p={8}>
+                  <Stack spacing={4}>
+                    <FormControl id="email">
+                      <FormLabel>Username</FormLabel>
+                      <Input type="text" value={username} onChange={handleUsernameChange} />
+                    </FormControl>
+                    <FormControl id="password">
+                      <FormLabel>Password</FormLabel>
+                      <Input type="password" value={password} onChange={handlePasswordChange} />
+                    </FormControl>
+                    <Stack spacing={10}>
+                      <Stack
+                        direction={{ base: 'column', sm: 'row' }}
+                        align={'start'}
+                        justify={'space-between'}>
+                        <Link color={'blue.400'}>Forgot password?</Link>
+                      </Stack>
+                      <Button
+                      onClick={() => handleAccountLogin()}
+                        bg={'teal.500'}
+                        color={'white'}
+                        _hover={{
+                          bg: 'teal.200',
+                        }}>
+                        Sign in
+                      </Button>
+                    </Stack>
+                  </Stack>
+                </Box>
+              </Stack>
+            </Flex>
 
           }
       </main>

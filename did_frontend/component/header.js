@@ -1,10 +1,20 @@
 import {Flex,Box, Text,Image, Stack, Link} from "@chakra-ui/react"
-import React from "react"
+import React,{ useEffect, useState} from 'react'
+
 
 export default function Header(){
-  const [isOpen, setIsOpen] = React.useState(false)
 
-  const toggle = () => setIsOpen(!isOpen)
+   const [changeGuestText,setChangeGuestText] = React.useState('Guest, Please Login')
+
+   useEffect(() => {
+    // Perform localStorage action
+    const token = localStorage.getItem('token')
+    if(token){
+        setChangeGuestText('Welcome, User')
+
+    }
+
+  }, [])
 
   return (
     <Flex
@@ -32,10 +42,13 @@ export default function Header(){
             justify={["center", "space-between", "flex-end", "flex-end"]}
             direction={["column", "row", "row", "row"]}
             pt={[4, 4, 0, 0]}
-        >
+        >   
+        <Text display="block" fontSize="lg" fontWeight="bold" color='white'>
+            {changeGuestText}
+        </Text>
             <Link >
                 <Text display="block" fontSize="lg" fontWeight="bold" color='white'>
-                   Menu1
+                   Profile
                 </Text>
             </Link>
 
@@ -47,7 +60,7 @@ export default function Header(){
 
             <Link >
                 <Text display="block" fontSize="lg" fontWeight="bold" color='white'>
-                   Menu3
+                   Logout
                 </Text>
             </Link>
 
