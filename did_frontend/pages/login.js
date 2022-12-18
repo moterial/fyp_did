@@ -1,12 +1,11 @@
 import Head from 'next/head'
-import { Inter } from '@next/font/google'
 import styles from '../styles/Home.module.css'
 import { Card, CardHeader, CardBody, CardFooter,Stack,VStack,Heading,Text,Divider,ButtonGroup,Button,Image,Center,Flex,useColorModeValue,Link,Box,FormControl,FormLabel,Input,Checkbox} from '@chakra-ui/react'
 import Header from '../component/header'
 import React,{ useEffect, useState} from 'react'
 
 
-export default function Home() {
+export default function Login() {
   const [backendData, setBackendData] = useState({})
   const [accountLogin, setAccountLogin] = useState(false)
   const [faceLogin, setfaceLogin] = useState(false)
@@ -16,9 +15,12 @@ export default function Home() {
   useEffect(() => {
     const token = localStorage.getItem('token')
     if(token){
-      window.location.href = '/dashboard'
+      
 
     }
+
+
+    
   }, [])
 
   const handleUsernameChange = (e) => {
@@ -51,7 +53,7 @@ export default function Home() {
       console.log(data)
       if(data.token){
         localStorage.setItem('token', data.token)
-        window.location.href = '/dashboard'
+        window.location.href = '/'
       }
     })
   }
@@ -66,7 +68,7 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Header/>
+      <Header children='login'/>
       <main className={styles.main}>
           {
             (!accountLogin && !faceLogin)  &&

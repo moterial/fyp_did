@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 
 
+
 function generateAccessToken(username) {
     return jwt.sign({username:username }, "accessToken", { expiresIn: '1800s' });
 }
@@ -14,12 +15,11 @@ function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization']
     const token = authHeader && authHeader.split(' ')[1]
   
-    if (token == null) return res.sendStatus(401)
-  
+    if (token == null) return res.json({status: "error", message: "Token is not valid"})
     jwt.verify(token, "accessToken" , (err, user) => {
       console.log(err)
   
-      if (err) return res.json("Token is not valid")
+      if (err) return res.json({status: "error", message: "Token is not valid"})
   
       req.AuthUser = user
   
@@ -31,12 +31,12 @@ function authenticateRefreshToken(req, res, next) {
     const authHeader = req.headers['authorization']
     const token = authHeader && authHeader.split(' ')[1]
   
-    if (token == null) return res.sendStatus(401)
+    if (token == null) return res.json({status: "error", message: "Token is not valid"})
   
     jwt.verify(token, "refreshToken" , (err, user) => {
       console.log(err)
   
-      if (err) return res.json("Token is not valid")
+      if (err) return res.json({status: "error", message: "Token is not valid"})
   
       req.AuthUser = user
   

@@ -1,22 +1,57 @@
-import {Flex,Box, Text,Image, Stack, Link} from "@chakra-ui/react"
-import React,{ useEffect, useState} from 'react'
+import {Flex,Box, Text,Image, Stack, Link,useDisclosure,Button,Input,Divider} from "@chakra-ui/react"
+import React,{ use, useEffect, useState} from 'react'
+import {
+    Drawer,
+    DrawerBody,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerOverlay,
+    DrawerContent,
+    DrawerCloseButton,
+  } from '@chakra-ui/react'
 
 
-export default function Header(){
+export default function Header({children}){
+  const { isOpen, onOpen, onClose } = useDisclosure()
+  const [pressLogout, setPressLogout] = useState(false)
+  const btnRef = React.useRef()
 
-   const [changeGuestText,setChangeGuestText] = React.useState('Guest, Please Login')
 
-   useEffect(() => {
-    // Perform localStorage action
-    const token = localStorage.getItem('token')
-    if(token){
-        setChangeGuestText('Welcome, User')
+  useEffect(() => {
+    console.log(children)
+    if(pressLogout){
+        console.log('logout')
+        //fetch the data from the backend
+        //store the data in the state
+        //display the data in the page
+        fetch('/api/user/logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'authorization': 'Bearer '+localStorage.getItem('token')
+            },
+            body: JSON.stringify({
+                username: children.username
+            })
+        })
+        .then((res) => res.json())
+        .then((data) => {
+            if(data.status == "success"){
+                localStorage.removeItem('token')
+                console.log(data)
+                setPressLogout(false)
+                window.location.href = '/login'
+            }else{
+                console.log(data)
+            }
+        })
 
+        
     }
-
-  }, [])
+    }, [pressLogout])
 
   return (
+    <>
     <Flex
       as="nav"
       align="center"
@@ -24,16 +59,19 @@ export default function Header(){
       wrap="wrap"
       w="100%"
       mb={8}
-      px={8}    
+      px={6}    
       py={4}
-      bg='teal'
+      bg='gray.600'
     >
         <Box>
-            <Text fontSize="md" fontWeight="bold" color='white'>
+            {/* <Text fontSize="md" fontWeight="bold" color='white'>
                 <Image src='/assets/metaverse.png'
                 boxSize='70px'/>
                 IDENTITY
-            </Text>
+            </Text> */}
+            <Button ref={btnRef} color='whiteAlpha.100' onClick={onOpen} size='md'>
+            <Image src='/assets/menu.png' boxSize='30px'/>
+      </Button>
         </Box>
 
         <Stack
@@ -44,28 +82,55 @@ export default function Header(){
             pt={[4, 4, 0, 0]}
         >   
         <Text display="block" fontSize="lg" fontWeight="bold" color='white'>
-            {changeGuestText}
+            {
+                children ? children.username : ''
+            }
         </Text>
-            <Link >
-                <Text display="block" fontSize="lg" fontWeight="bold" color='white'>
-                   Profile
-                </Text>
-            </Link>
-
-            <Link >
-                <Text display="block" fontSize="lg" fontWeight="bold" color='white'>
-                   Menu2
-                </Text>
-            </Link>
-
-            <Link >
-                <Text display="block" fontSize="lg" fontWeight="bold" color='white'>
-                   Logout
-                </Text>
-            </Link>
-
-
         </Stack>
     </Flex>
+    <Drawer
+        isOpen={isOpen}
+        placement='right'
+        onClose={onClose}
+        finalFocusRef={btnRef}
+    >
+        <DrawerOverlay />
+        <DrawerContent>
+            <DrawerCloseButton />
+            <DrawerHeader>Menu</DrawerHeader>
+            <DrawerBody>
+                
+                <Link href='https://chakra-ui.com' py={4}>
+                    Profile
+                </Link>
+                <Divider orientation='horizontal' my={2} />
+                <Link href='https://chakra-ui.com' py={4}>
+                    
+                </Link>
+                <Divider orientation='horizontal' my={2}/>
+            
+            </DrawerBody>
+
+
+            <DrawerFooter>
+                {/* <Button variant='outline' mr={3} onClick={onClose}>
+                Close
+                </Button> */}
+                {
+                        children=='login' ?
+                        <Button  colorScheme='blue'>
+                            Login
+                        </Button>
+                        :
+                        <Button onClick={()=>setPressLogout(true)} colorScheme='red'>
+                            Logout
+                        </Button>
+                        
+                        
+                    } 
+            </DrawerFooter>
+        </DrawerContent>
+    </Drawer>
+    </>
   )
 }

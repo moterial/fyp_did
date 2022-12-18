@@ -5,13 +5,13 @@ module.exports = (req, res, next) => {
 
     const token = req.headers.authorization.split(' ')[1];
 
-    if (token == null) return res.sendStatus(401)
+    if (token == null) return res.json({status: "error", message: "Token is not valid"})
 
 
     jwt.verify(token, "accessToken" , (err, user) => {
       console.log(err)
   
-      if (err) return res.json("Token is not valid")
+      if (err) return res.json({status: "error", message: "Token is not valid"})
       
       if(user.username.username == req.body.username){
         //check if the token is the same as the one in the database
@@ -23,12 +23,12 @@ module.exports = (req, res, next) => {
             if(user.token == token){
               next()
             }else{
-              return res.json("Token is not valid1")
+              return res.json({status: "error", message: "Token is not valid"})
             }   
           }
         })
       }else{  
-        return res.json("Token is not valid2")
+        return res.json({status: "error", message: "Token is not valid"})
       } 
       
   

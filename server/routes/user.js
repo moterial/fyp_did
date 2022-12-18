@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const User = require('../models/user.model');
-const auth = require('../middleware/login')
+const auth = require('../middleware/auth')
 const util = require('../util/token');
 
 router.route('/login').post((req, res) => {
@@ -37,6 +37,7 @@ router.route('/login').post((req, res) => {
     
 })
 
+
 router.route('/register').post((req, res) => {
     //check if user already exists
     const username = req.body.username;
@@ -64,5 +65,20 @@ router.route('/register').post((req, res) => {
     
     
 });
+
+router.post('/logout', auth, (req, res) => {
+    //remove the token from the database
+    User.findOneAndUpdate({
+        username: req.body.username
+    }, {
+        $set: {
+            token: null
+        }
+    }, {
+        upsert: true
+    })
+    .then(() => res.json({status: "success", message: "User logged out successfully"}))
+    .catch(err => res.status(400).json({status: "error", message: "Error: " + err}));
+})
 
 module.exports = router;
