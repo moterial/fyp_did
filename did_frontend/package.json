@@ -9,15 +9,28 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@chakra-ui/icon": "^3.0.13",
+    "@chakra-ui/icons": "^2.0.14",
     "@chakra-ui/react": "^2.4.4",
     "@next/font": "13.0.7",
+    "@truffle/contract": "^4.6.9",
+    "@truffle/hdwallet-provider": "^2.1.3",
+    "bootstrap": "^5.2.3",
+    "framer": "^2.2.1",
     "framer-motion": "^6.5.1",
+    "ipfs-http-client": "^59.0.0",
     "jwt-decode": "^3.1.2",
-    "next": "13.0.7",
+    "mongodb-client-encryption": "^2.3.0",
+    "next": "^13.0.7",
     "next-auth": "^4.18.6",
     "react": "18.2.0",
+    "react-bootstrap": "^2.7.0",
     "react-dom": "18.2.0",
     "react-icons": "^4.7.1",
-    "react-use-auth": "^2.1.0-14"
+    "react-slick": "^0.29.0",
+    "react-use-auth": "^2.1.0-14",
+    "slick-carousel": "^1.8.1",
+    "web3": "^1.7.4",
+    "web3-eth-accounts": "^1.8.1"
   }
 }

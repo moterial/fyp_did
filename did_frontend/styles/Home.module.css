@@ -276,3 +276,9 @@
     transform: rotate(0deg);
   }
 }
+
+.addCertiBtn:hover{
+  background: white!important;
+  color: linear-gradient(to right, #42275a, #734b6d)!important;
+  border: 1px solid linear-gradient(to right, #42275a, #734b6d)!important;
+}

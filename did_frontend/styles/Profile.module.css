@@ -1,0 +1,5 @@
+.addCertiBtn:hover{
+    background: white;
+    color: linear-gradient(to right, #42275a, #734b6d);
+    border: 1px solid linear-gradient(to right, #42275a, #734b6d);
+  }

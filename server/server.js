@@ -18,11 +18,11 @@ connection.once('open', () => {
 })
 
 const usersRouter = require('./routes/user');
-const dashBoard = require('./routes/dashboard');
+const dashBoardRouter = require('./routes/dashboard');
 
 
 app.use('/api/user', usersRouter);
-app.use('/api/dashboard', dashBoard);
+app.use('/api/dashboard', dashBoardRouter);
 
 
 app.listen(5000, function () {  

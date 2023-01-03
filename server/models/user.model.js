@@ -16,6 +16,10 @@ const userSchema = new Schema({
     walletAddress:{
         type: String,
     },
+    walletPrivateKey:{
+        
+        type: String,
+    },
     token:{
         type: String,
     },
@@ -35,22 +39,13 @@ const userSchema = new Schema({
         type: String,
         required: true,
     },
-    //certificate as a array of objects with certificate name, certificate id, approved by, date of issue with default values
-    certificate: [{
-        certificateName: {
-            type: String,
-            
-        },
-        approvedBy: {
-            type: Schema.Types.ObjectId
-           
-        },
-        dateOfIssue: {
-            type: Date,
-            
-        }
-        
-    }],
+    bios:{
+        type: String,
+    },
+    name:{
+        type: String,
+    },
+    
     
 
 })

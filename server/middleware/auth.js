@@ -9,7 +9,7 @@ module.exports = (req, res, next) => {
 
 
     jwt.verify(token, "accessToken" , (err, user) => {
-      console.log(err)
+      console.log('log ',err)
   
       if (err) return res.json({status: "error", message: "Token is not valid"})
       
@@ -28,7 +28,7 @@ module.exports = (req, res, next) => {
           }
         })
       }else{  
-        return res.json({status: "error", message: "Token is not valid"})
+        return res.json({status: "error", message: "Token is not valid1"})
       } 
       
   

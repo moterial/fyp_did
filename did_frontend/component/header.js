@@ -8,19 +8,22 @@ import {
     DrawerOverlay,
     DrawerContent,
     DrawerCloseButton,
-  } from '@chakra-ui/react'
+} from '@chakra-ui/react'
+import {load} from '../src/funcs'
 
 
-export default function Header({children}){
+export default function Header({status,children}){
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [pressLogout, setPressLogout] = useState(false)
   const btnRef = React.useRef()
 
 
-  useEffect(() => {
-    console.log(children)
-    if(pressLogout){
-        console.log('logout')
+  useEffect(() => { 
+    // console.log(status)
+    // console.log(children)
+
+    if(pressLogout){    
+        console.log('logout ing')
         //fetch the data from the backend
         //store the data in the state
         //display the data in the page
@@ -50,12 +53,13 @@ export default function Header({children}){
     }
     }, [pressLogout])
 
+
+
   return (
     <>
     <Flex
       as="nav"
       align="center"
-      justify="space-between"
       wrap="wrap"
       w="100%"
       mb={8}
@@ -63,29 +67,34 @@ export default function Header({children}){
       py={4}
       bg='gray.600'
     >
-        <Box>
-            {/* <Text fontSize="md" fontWeight="bold" color='white'>
-                <Image src='/assets/metaverse.png'
-                boxSize='70px'/>
-                IDENTITY
-            </Text> */}
+        <Box pr={10}>
             <Button ref={btnRef} color='whiteAlpha.100' onClick={onOpen} size='md'>
             <Image src='/assets/menu.png' boxSize='30px'/>
-      </Button>
+            </Button>
         </Box>
-
+        <Box pr={10} align="center">
+            
+            <Link href='/'>
+                <Image src='/assets/metaverse.png' boxSize='50px'/>
+                <Text display="block" fontSize="lg" fontWeight="bold" color='white'>
+                    IDENTITY
+                </Text>
+            </Link>
+            
+            
+        </Box>
         <Stack
-            spacing={8}
-            align="center"
-            justify={["center", "space-between", "flex-end", "flex-end"]}
-            direction={["column", "row", "row", "row"]}
-            pt={[4, 4, 0, 0]}
-        >   
+            direction="row"
+        >
+        
+        
         <Text display="block" fontSize="lg" fontWeight="bold" color='white'>
+            Welcome back,  
             {
                 children ? children.username : ''
             }
         </Text>
+        
         </Stack>
     </Flex>
     <Drawer
@@ -100,7 +109,7 @@ export default function Header({children}){
             <DrawerHeader>Menu</DrawerHeader>
             <DrawerBody>
                 
-                <Link href='https://chakra-ui.com' py={4}>
+                <Link href='/dashboard/profile' py={4}>
                     Profile
                 </Link>
                 <Divider orientation='horizontal' my={2} />
@@ -117,8 +126,8 @@ export default function Header({children}){
                 Close
                 </Button> */}
                 {
-                        children=='login' ?
-                        <Button  colorScheme='blue'>
+                        !status ?
+                        <Button onClick={()=> window.location.href = '/login'} colorScheme='blue'>
                             Login
                         </Button>
                         :
