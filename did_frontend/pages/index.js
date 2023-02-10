@@ -125,7 +125,7 @@ export default function Home() {
             //redirect to login page
             window.location.href = '/login'
         }
-        else{
+        else{ 
             const decoded = jwt_decode(token)
             fetch('/api/dashboard', {
                 method: 'POST',
