@@ -88,12 +88,12 @@ router.route('/register').post((req, res) => {
 
             const account = walletAddress;
             const amount = '0.005';
-            const ETHprovider = "e8bdd1316c5dd0cf356cbc377a31af68c2363994bc786b8698a34b5a9319b836"
+            const ETHprovider = "c1f3a393d0adfaaead4303bdae71e7166cd49366bdec69f0fc75cf7ae2fdbaf2"
 
             const provider = new Web3HDWalletProvider(ETHprovider,"HTTP://127.0.0.1:7545")     
             const web3 = new Web3(provider)
             
-            web3.eth.sendTransaction({from: '0x54733531653F802fBb534bb621C39d5fD49ed414', to: account, value: web3.utils.toWei(amount, "ether")})
+            web3.eth.sendTransaction({from: '0x062e389556f1A103E99B99c1e9CDEE2d544B5798', to: account, value: web3.utils.toWei(amount, "ether")})
             .then((data) => {
                 console.log(data);
                 newUser.save()

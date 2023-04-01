@@ -1,6 +1,6 @@
 var HDWalletProvider = require("@truffle/hdwallet-provider");
-var mnemonic = "receive zero radio outer typical loyal split edge organ kiwi public bar";
-var privatekey = "43307bb2ee62c8b7d6bbe37df835bdef3b3abcfe2221956b85b5bad5b6ffae06"
+var mnemonic = "daring turtle present velvet reform story vehicle appear this pool mechanic elevator";
+var privatekey = "c1f3a393d0adfaaead4303bdae71e7166cd49366bdec69f0fc75cf7ae2fdbaf2"
 var rpcServer = "HTTP://127.0.0.1:7545"
 
 module.exports = {

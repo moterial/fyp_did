@@ -9,6 +9,7 @@ app.use(express.json());
 app.use(cors());
 
 const uri = process.env.ATLAS_URI;
+
 mongoose.connect(uri, { useNewUrlParser: true}
 );
 

@@ -1,10 +1,12 @@
 import Head from 'next/head'
 import { Card, CardHeader, CardBody, CardFooter,Stack,VStack,Heading,Text,Divider,ButtonGroup,Button,Image,Center,Flex,useColorModeValue,Link,Box,FormControl,FormLabel,Input,Checkbox} from '@chakra-ui/react'
-import React,{ useEffect, useState} from 'react'
+import React,{ useEffect, useState, useRef} from 'react'
 import jwt_decode from 'jwt-decode'
 import { Sidebar } from '../motion/Sidebar';
 import {load} from '../src/funcs'
 import contract from '@truffle/contract';
+import * as faceapi from '../src/face-api.js';
+
 
 const Web3EthAccounts = require('web3-eth-accounts');
 
@@ -24,7 +26,10 @@ export default function Login() {
   const [regPhone, setRegPhone] = useState('')
   const [regBios, setRegBios] = useState('')
   const [regName, setRegName] = useState('')
-
+  const videoRef = useRef();
+  const canvasRef = useRef();
+  const [faceDetected,setFaceDetected] = useState(false);
+  const [videoSrc,setVideoSrc] = useState(null);
 
 
   useEffect(() => {
@@ -53,7 +58,85 @@ export default function Login() {
         }
       })
     }
+    
   }, [])
+
+
+  useEffect(() => {
+    if(faceLogin){
+      const loadModel = async () => {
+        const MODEL_URI = '../models';
+        Promise.all([
+          faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URI),
+          faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URI),
+          faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URI),
+          faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URI),
+          // faceapi.loadFaceRecognitionModel(MODEL_URI),
+          // faceapi.loadFaceRecognitionModel(MODEL_URI)
+          
+        ]).then( async () => {
+            startVideo()
+          //   const mtcnnForwardParams = {
+          //     maxNumScales: 10,
+          //     // scale factor used to calculate the scale steps of the image
+          //     // pyramid used in stage 1
+          //     scaleFactor: 0.709,
+          //     // the score threshold values used to filter the bounding
+          //     // boxes of stage 1, 2 and 3
+          //     scoreThresholds: [0.6, 0.7, 0.7],
+          //     // limiting the search space to larger faces for webcam detection
+          //     minFaceSize: 200
+          //   }
+            
+          //   const mtcnnResults = await faceapi.mtcnn(videoRef.current, mtcnnForwardParams)
+          //   faceapi.drawDetection(canvasRef.current, mtcnnResults.map(res => res.faceDetection), { withScore: false })
+          // faceapi.drawLandmarks(canvasRef.current, mtcnnResults.map(res => res.faceLandmarks), { lineWidth: 4, color: 'red' })
+
+
+
+        })
+      }
+      loadModel()
+      
+
+    }
+  }, [faceLogin])
+
+  const startVideo = async() => {
+    navigator.getUserMedia(
+      { video: {} },
+      stream => videoRef.current.srcObject = stream,
+      err => console.error(err)
+    )
+
+    
+  }
+
+  const handleVideoOnPlay = () => {
+    setInterval(async() => {
+      
+      canvasRef.current.innerHTML = faceapi.createCanvasFromMedia(videoRef.current)
+      const displaySize = { width: videoRef.current.width, height: videoRef.current.height }
+      faceapi.matchDimensions(canvasRef.current, displaySize)
+
+      const detection = await faceapi.detectAllFaces(videoRef.current, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions();
+      const resizedDetections = faceapi.resizeResults(detection, displaySize)
+      canvasRef.current.getContext('2d').clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
+      faceapi.draw.drawDetections(canvasRef.current, resizedDetections)
+      faceapi.draw.drawFaceLandmarks(canvasRef.current, resizedDetections)
+      faceapi.draw.drawFaceExpressions(canvasRef.current, resizedDetections)
+      //get the updated faceDetected state 
+      console.log(detection)
+
+
+     
+
+    }, 1000)
+
+    
+  }
+
+
 
   const handleUsernameChange = (e) => {
     setUsername(e.target.value)
@@ -221,6 +304,8 @@ export default function Login() {
       })
         
     }
+  
+
 
 
   return (
@@ -249,7 +334,7 @@ export default function Login() {
                 </Center>
                 <Stack mt='6' spacing='3'>
                   <Center>
-                    <Button colorScheme='teal' size='lg'  className='container' >
+                    <Button colorScheme='teal' size='lg' onClick={() => setfaceLogin(true)}  className='container' >
                       FaceID Login
                     </Button>
                   </Center>
@@ -398,6 +483,59 @@ export default function Login() {
                 </Box>
               </Stack>
             </Flex>
+
+          }{
+            faceLogin  &&
+            <Flex
+              minH={'75vh'}
+              justify={'center'}
+              minW={'40vw'}
+              bg={useColorModeValue('gray.50', 'inherit')}
+              //make border radius smaller
+              borderRadius={'xl'}
+            >
+              <Stack spacing={8}  maxW={'lg'} py={5} px={6} mt={10}  >
+                <Stack align={'center'}>
+                  <Heading fontSize={'4xl'} style={{color:'#FF008C'}} className="mb-3" >Sign in to your account</Heading>
+                  <Text fontSize={'lg'} color={'gray.600'} className="fw-bold">
+                    to enjoy all of our cool <Link color={'#4400FF'}>features</Link> ✌️
+                  </Text>
+                </Stack>
+                <Box
+                  rounded={'lg'}
+                  bg={useColorModeValue('white', 'gray.700')}
+                  boxShadow={'lg'}
+                  p={8}>
+                  <Stack spacing={4}>
+                    <FormControl id="email">
+                      <FormLabel>Username</FormLabel>
+                      <Input type="text" value={username} onChange={handleUsernameChange} />
+                    </FormControl>
+
+
+                    <Box id="cam" w='500px' h='320px'>
+                      <video ref={videoRef} autoPlay muted id="video" width="400" height="300" className="border rounded-lg" onPlay={handleVideoOnPlay}>  </video>
+                      <canvas ref={canvasRef} id="canvas" width="400" height="300" className="border rounded-lg" ></canvas>
+
+                    </Box>
+                      
+                    
+                    
+                    <button >Capture</button>
+                    <button >Login</button>
+
+                     
+                      
+
+                    
+                    
+                  </Stack>
+                  
+                </Box>
+              </Stack>
+            </Flex>
+              
+
 
           }
           </div>
