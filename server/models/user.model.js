@@ -45,6 +45,10 @@ const userSchema = new Schema({
     name:{
         type: String,
     },
+    faceImage:{
+        type: mongoose.Schema.Types.ObjectId
+
+    }
     
     
 

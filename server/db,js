@@ -1,0 +1,5 @@
+module.exports = {
+  url: "mongodb+srv://michael:michael123@cluster0.dlzsr.mongodb.net/?retryWrites=true&w=majority",
+  database: "DID",
+  imgBucket: "photos",
+};

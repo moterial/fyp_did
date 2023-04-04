@@ -75,8 +75,21 @@ contract Did {
 
     }
 
+
     function getImageCount() public view returns (uint) {
         return imageCount;
+    }
+
+    function getUserProfile(address _address) public view returns (string memory, string memory, string memory) {
+        return (profileMap[_address].name, profileMap[_address].email, profileMap[_address].content);
+    }
+
+    function getUserCertificate(address _address) public view returns (Certificate[] memory) {
+        Certificate[] memory certificates;
+        for (uint i = 0; i < certificateCount[_address]; i++) {
+            certificates[i] = certificateMap[_address][i];
+        }
+        return certificates;
     }
 
 
@@ -150,7 +163,6 @@ contract Did {
     function approveCertificate(address _address, uint256 _index) public {
         certificateMap[_address][_index].isApproved = true;
         certificateMap[_address][_index].approvedBy = msg.sender;
-
     }
 }
 

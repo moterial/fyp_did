@@ -18,6 +18,7 @@
     "bootstrap": "^5.2.3",
     "framer": "^2.2.1",
     "framer-motion": "^6.5.1",
+    "ganache-core": "^2.13.2",
     "ipfs-http-client": "^59.0.0",
     "jwt-decode": "^3.1.2",
     "mongodb-client-encryption": "^2.3.0",

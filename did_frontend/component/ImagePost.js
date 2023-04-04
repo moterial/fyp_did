@@ -82,7 +82,9 @@ export function ImagePost({post,contract,addressAccount}){
             <Flex flex='1' gap='4' alignItems='center' flexWrap='wrap'>
                 <Avatar name='Segun Adebayo' src='https://cdn-icons-png.flaticon.com/512/9069/9069049.png' />
                 <Box>
-                    <h1 className='h6'>{author }</h1>
+                    <h1 className='h6'>
+                        <a href={`/dashboard/profile/${address}`} className='text-dark'>{author}</a>
+                    </h1>
                     <div className='row'>
 
                         <p className='' style={{fontSize:'10px'}}>{address}</p>

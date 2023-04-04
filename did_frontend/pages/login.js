@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import { Card, CardHeader, CardBody, CardFooter,Stack,VStack,Heading,Text,Divider,ButtonGroup,Button,Image,Center,Flex,useColorModeValue,Link,Box,FormControl,FormLabel,Input,Checkbox} from '@chakra-ui/react'
+import { Card, CircularProgress, CardHeader, CardBody, CardFooter,Stack,VStack,Heading,Text,Divider,ButtonGroup,Button,Center,Flex,useColorModeValue,Link,Box,FormControl,FormLabel,Input,Checkbox} from '@chakra-ui/react'
 import React,{ useEffect, useState, useRef} from 'react'
 import jwt_decode from 'jwt-decode'
 import { Sidebar } from '../motion/Sidebar';
@@ -28,9 +28,12 @@ export default function Login() {
   const [regName, setRegName] = useState('')
   const videoRef = useRef();
   const canvasRef = useRef();
-  const [faceDetected,setFaceDetected] = useState(false);
-  const [videoSrc,setVideoSrc] = useState(null);
-
+  const [modelLoaded, setModelLoaded] = useState(false);
+  const [faceMatched, setFaceMatched] = useState(false);
+  const [faceLoginClicked, setFaceLoginClicked] = useState(null);
+  const [registerFace, setRegisterFace] = useState(false);
+  const [faceImage, setFaceImage] = useState(null);
+  const faceMatcherRef = useRef(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -63,44 +66,120 @@ export default function Login() {
 
 
   useEffect(() => {
-    if(faceLogin){
+    if(faceLoginClicked){
       const loadModel = async () => {
         const MODEL_URI = '../models';
         Promise.all([
           faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URI),
           faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URI),
           faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URI),
-          faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URI),
-          // faceapi.loadFaceRecognitionModel(MODEL_URI),
-          // faceapi.loadFaceRecognitionModel(MODEL_URI)
+          faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URI),
+          faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URI)
           
-        ]).then( async () => {
+        ]).then(() => {
+            setModelLoaded(true);
             startVideo()
-          //   const mtcnnForwardParams = {
-          //     maxNumScales: 10,
-          //     // scale factor used to calculate the scale steps of the image
-          //     // pyramid used in stage 1
-          //     scaleFactor: 0.709,
-          //     // the score threshold values used to filter the bounding
-          //     // boxes of stage 1, 2 and 3
-          //     scoreThresholds: [0.6, 0.7, 0.7],
-          //     // limiting the search space to larger faces for webcam detection
-          //     minFaceSize: 200
-          //   }
-            
-          //   const mtcnnResults = await faceapi.mtcnn(videoRef.current, mtcnnForwardParams)
-          //   faceapi.drawDetection(canvasRef.current, mtcnnResults.map(res => res.faceDetection), { withScore: false })
-          // faceapi.drawLandmarks(canvasRef.current, mtcnnResults.map(res => res.faceLandmarks), { lineWidth: 4, color: 'red' })
-
-
-
         })
       }
       loadModel()
       
 
     }
-  }, [faceLogin])
+  }, [faceLoginClicked])
+
+
+  useEffect(() => {
+    if(registerFace){
+      const MODEL_URI = '../models';
+    async function loadModels() {
+      await Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URI),
+        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URI),
+        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URI),
+        faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URI),
+        faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URI)
+        
+      ]);
+      setModelLoaded(true);
+    }
+    loadModels();
+    startVideo()
+    }
+  }, [registerFace]);
+
+
+
+
+
+
+  const handleFaceLoginClicked = async () => {
+    setFaceLoginClicked(true)
+
+    const btn = document.getElementById('faceLoginClicked')
+    btn.disabled = true
+    if(faceLogin && username != ''){
+        const imgBlob = await fetch('/api/user/faceid/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            
+            },
+            body: JSON.stringify({
+              username: username  
+            })
+          }).then((res) => res.blob());
+          
+          const img = new Image();
+          img.src = URL.createObjectURL(imgBlob);
+          
+          const label = username;
+          
+        const loadFaceMatcher = async () => {
+          
+          const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+          console.log(detections)
+          if (detections && detections.descriptor) {
+            const descriptors = await new faceapi.LabeledFaceDescriptors(label, [
+              detections.descriptor,
+            ]);
+            faceMatcherRef.current = new faceapi.FaceMatcher(descriptors);
+          } else {
+            console.error("Face not detected");
+          }
+         
+        };
+        loadFaceMatcher();
+        setModelLoaded(true);
+    }else{
+      alert('Please enter your username')
+    }
+  }
+
+  const onVideoPlay = async () => {
+    if (canvasRef.current && videoRef.current.srcObject && modelLoaded ) {
+      
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+      const displaySize = { width: video.width, height: video.height };
+      faceapi.matchDimensions(canvas, displaySize);
+
+      const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+      if (detection) {
+        const bestMatch = faceMatcherRef.current.findBestMatch(detection.descriptor);
+        if (bestMatch.distance < 0.6) {
+          
+          console.log('Face matched');
+          setFaceMatched(true);
+          handleFaceLogin()
+        }
+      }
+    }
+    // Repeat the detection every 100 milliseconds
+    setTimeout(() => {
+      onVideoPlay();
+    }, 1000);
+  };
 
   const startVideo = async() => {
     navigator.getUserMedia(
@@ -108,9 +187,9 @@ export default function Login() {
       stream => videoRef.current.srcObject = stream,
       err => console.error(err)
     )
-
-    
   }
+
+  
 
   const handleVideoOnPlay = () => {
     setInterval(async() => {
@@ -126,10 +205,9 @@ export default function Login() {
       faceapi.draw.drawFaceLandmarks(canvasRef.current, resizedDetections)
       faceapi.draw.drawFaceExpressions(canvasRef.current, resizedDetections)
       //get the updated faceDetected state 
-      console.log(detection)
+      // console.log(detection)
 
-
-     
+    
 
     }, 1000)
 
@@ -175,11 +253,7 @@ export default function Login() {
   }
 
   function handleAccountLogin(){
-    //get the username and password from the input
-    //send the username and password to the backend
-    //if the username and password is correct, the backend will send back a token
-    //store the token in the local storage
-    //redirect to the dashboard page
+
     const data = {
       username: username,
       password: password
@@ -201,12 +275,37 @@ export default function Login() {
     })
   }
 
+
+  function handleFaceLogin(){
+
+    const data = {
+      username: username,
+      faceLoginResult: true
+    }
+    console.log(data)
+    fetch('/api/user/facelogin', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+    .then((res) => res.json())
+    .then((data) => {
+      console.log(data)
+      if(data.token){
+        localStorage.setItem('token', data.token)
+        window.location.href = '/'
+      }
+    })
+  }
+
   const pullData = (isOpen) => {
     console.log(isOpen)
 
     }
 
-    function handleAccountRegister(){
+    async function handleAccountRegister(){
 
       //create a new user in the blockchain
       //create a new user in the database
@@ -236,6 +335,8 @@ export default function Login() {
         return
       }
 
+      
+
       fetch('/api/user/checkUsername', {
         method: 'POST',
         headers: {
@@ -254,6 +355,10 @@ export default function Login() {
           return
         }
       })
+
+        
+      
+
       
       console.log('registering')
       const account = new Web3EthAccounts('HTTP://127.0.0.1:7545');
@@ -262,25 +367,26 @@ export default function Login() {
       let key = result.privateKey.substring(2)
       let accountAddress = result.address
       let addAccount = account.wallet.add(key)
-      console.log(addAccount)
-      const data1 = {
-        username: regUsername,
-        password: regPassword,
-        name:regUsername,
-        email: regEmail,
-        phone: regPhone,
-        walletAddress: accountAddress,
-        bios: regBios,
-        walletPrivateKey: key
-      }
+
+
+
+      
+      const blob = await (await fetch(faceImage)).blob();
+      const formData = new FormData();
+      formData.append('image', blob, 'face.jpg');
+      formData.append('username', regUsername);
+      formData.append('walletAddress', accountAddress);
+      formData.append('walletPrivateKey', key);
+      formData.append('name', regName);
+      formData.append('email', regEmail);
+      formData.append('phone', regPhone);
+      formData.append('bios', regBios);
+      formData.append('password', regPassword);
+
       fetch('/api/user/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data1)
-      })
-      .then((res) => res.json()) 
+        body: formData
+      }).then((res) => res.json()) 
       .then((data) => {
         console.log(data)
         if(data.token){
@@ -291,6 +397,7 @@ export default function Login() {
         console.log(err)
         alert('Error')
       })
+
       setTimeout(2000)
       load(key).then((data) => {
           console.log(data.didContractDeployed)
@@ -304,8 +411,66 @@ export default function Login() {
       })
         
     }
-  
 
+    const handleCaptureFace = async () =>{
+      const detection = await captureFace();
+      if (!detection) {
+        alert('No face detected. Please try again.');
+        return;
+      }else{
+        // console.log(detection)
+        // console.log(faceImage)
+        
+        
+          alert('face detected. Proceed to register');
+          setRegisterFace(false);
+          setRegister(true);
+        
+        
+      }
+    }
+  
+    const captureFace = async () => {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      let stream = null;
+
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+    
+        // wait for the video to load and play
+        await new Promise(resolve => video.onloadedmetadata = resolve);
+        video.play();
+    
+
+        // draw the current video frame to the canvas
+        const context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+        // detect the face in the canvas
+        const detection = await faceapi.detectSingleFace(canvas);
+
+        // convert the canvas to a data URL and store it in state
+        const dataURL = canvas.toDataURL();
+        setFaceImage(dataURL)
+  
+    
+        // stop the video stream
+        if (stream && stream.getTracks) {
+          stream.getTracks().forEach(track => track.stop());
+        }
+    
+        // return the face detection result
+        return detection;
+      } catch (err) {
+        console.error(err);
+        if (stream && stream.getTracks) {
+          stream.getTracks().forEach(track => track.stop());
+        }
+        return null;
+      }
+    };
 
 
   return (
@@ -323,11 +488,11 @@ export default function Login() {
       <main >
         <div >
           {
-            (!accountLogin && !faceLogin && !register)  &&
+            (!accountLogin && !faceLogin && !register && !registerFace)  &&
             <Card maxW='lg' className='container bg-white' >
               <CardBody>
                 <Center>
-                  <Image
+                  <img
                     src='/assets/face-id.png'
                     boxSize='200px'
                   />
@@ -346,7 +511,7 @@ export default function Login() {
                   <Button className='container px-5' onClick={() => setAccountLogin(true)} variant='solid' colorScheme='blue' >
                     Login by username and pw
                   </Button>
-                  <Button className='container' variant='ghost' colorScheme='blue' onClick={() => setRegister(true)}>
+                  <Button className='container' variant='ghost' colorScheme='blue' onClick={() => setRegisterFace(true)}>
                     register
                   </Button>
                 </ButtonGroup>
@@ -513,20 +678,64 @@ export default function Login() {
                     </FormControl>
 
 
+                    {
+                      faceLoginClicked &&
+                      <Box id="cam" w='500px' h='320px'>
+                      <video ref={videoRef}  autoPlay muted id="video" width="400" height="300" className="border rounded-lg" onPlay={onVideoPlay}>  </video>
+                      <canvas ref={canvasRef} id="canvas" width="400" height="300" className="border rounded-lg" ></canvas>
+                      <CircularProgress isIndeterminate color='green.300' />
+                      </Box>
+                    }
+                      
+                    
+                    <button onClick={handleFaceLoginClicked} id='faceLoginClicked'>Login</button>
+
+                     
+         
+                    
+                  </Stack>
+                  
+                </Box>
+              </Stack>
+            </Flex>
+              
+
+
+          }{
+            registerFace  &&
+            <Flex
+              minH={'75vh'}
+              justify={'center'}
+              minW={'40vw'}
+              bg={useColorModeValue('gray.50', 'inherit')}
+              //make border radius smaller
+              borderRadius={'xl'}
+            >
+              <Stack spacing={8}  maxW={'lg'} py={5} px={6} mt={10}  >
+                <Stack align={'center'}>
+                  <Heading fontSize={'4xl'} style={{color:'#FF008C'}} className="mb-3" >Face Register</Heading>
+                  <Text fontSize={'lg'} color={'gray.600'} className="fw-bold">
+                    Please Show your face here ✌️
+                  </Text>
+                </Stack>
+                <Box
+                  rounded={'lg'}
+                  bg={useColorModeValue('white', 'gray.700')}
+                  boxShadow={'lg'}
+                  p={8}>
+                  <Stack spacing={4}>
+                    
+
+
                     <Box id="cam" w='500px' h='320px'>
-                      <video ref={videoRef} autoPlay muted id="video" width="400" height="300" className="border rounded-lg" onPlay={handleVideoOnPlay}>  </video>
+                      <video ref={videoRef} autoPlay muted id="video" width="400" height="300" className="border rounded-lg" >  </video>
                       <canvas ref={canvasRef} id="canvas" width="400" height="300" className="border rounded-lg" ></canvas>
 
                     </Box>
                       
                     
                     
-                    <button >Capture</button>
-                    <button >Login</button>
-
-                     
-                      
-
+                    <button onClick={handleCaptureFace}>Capture</button>
                     
                     
                   </Stack>
