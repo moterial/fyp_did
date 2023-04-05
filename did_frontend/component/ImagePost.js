@@ -17,7 +17,43 @@ export function ImagePost({post,contract,addressAccount}){
     const [account , setAccount] = useState('')
     const [postId, setPostId] = useState('')
     const toast = useToast()
+    const [expanded, setExpanded] = useState(false);    
+    const [comment, setComment] = useState("");
+    const [comments, setComments] = useState([
+        { author: "Alice", content: "This is the first comment" },
+        { author: "Bob", content: "This is the second comment" },
+    ]);
 
+    function handleCommentChange(event) {
+        setComment(event.target.value);
+    }
+
+    async function handlePostComment () {
+        console.log("My comment input is",comment)
+        contract.addComment(posts.id, comment, { from: account })
+        .then((result) => {
+            console.log(parseInt(result))
+            toast({
+                title: 'Comment added.',
+                description: "We've added your comment.",
+                status: 'success',
+                duration: 9000,
+                isClosable: true,
+            })
+            setTimeout(() => {
+                window.location.reload()
+            }, 500);
+        })
+        
+    }
+
+  function renderComments() {
+    return comments.map((comment, index) => (
+      <div key={index}>
+        <strong>{comment.author}:</strong> {comment.content}
+      </div>
+    ));
+  }
     useEffect(() => {
         // console.log("CHILDREN: ",posts)
         //console log the data type of the posts
@@ -83,7 +119,10 @@ export function ImagePost({post,contract,addressAccount}){
                 <Avatar name='Segun Adebayo' src='https://cdn-icons-png.flaticon.com/512/9069/9069049.png' />
                 <Box>
                     <h1 className='h6'>
-                        <a href={`/dashboard/profile/${address}`} className='text-dark'>{author}</a>
+                        <a href={`/dashboard/profile/${address}`} className='text-dark'>{
+                            author? author : 'Anonymous'
+                        
+                        }</a>
                     </h1>
                     <div className='row'>
 
@@ -126,9 +165,42 @@ export function ImagePost({post,contract,addressAccount}){
             <Button flex='1' variant='ghost' leftIcon={<FaEthereum />} onClick={event => handleTips(posts)} >
             Tips
             </Button>
-            <Button flex='1' variant='ghost' leftIcon={<BiChat />}>
+            <Button flex='1' variant='ghost' leftIcon={<BiChat />} onClick={() => setExpanded(!expanded)}>
             Comment
             </Button>
+
+            <div style={
+                {margin: 'auto'}
+            }>
+            
+                {expanded && (
+                    <div >
+                        <div style={
+                            //make its width fit the parent
+                            {width: '100%',
+                            marginBottom: '10px'
+                        }
+
+                        }>
+                            <textarea value={comment} onChange={handleCommentChange} style={
+
+                                {border: '1px solid #ccc', borderRadius: '4px', padding: '5px', width: '100%'}
+                            } />
+                            <button onClick={handlePostComment} style={{
+                                //make it look like a button
+                                background: '#ccc',
+                                border: 'none',
+                                padding: '5px 10px',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                                
+                            }}>Post Comment</button>
+                        </div>
+                    {renderComments()}
+                
+                    </div>
+                )}
+            </div>
             
         </CardFooter>
     </Card>

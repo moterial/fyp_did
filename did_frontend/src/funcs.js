@@ -12,6 +12,7 @@ export const load = async (privateKey) => {
 }
 
 
+
 const loadProfile = async (didContractDeployed, addressAccount) => {
     const certificateCount = await didContractDeployed.getCertificateCount()
     const certificates = [];
@@ -22,12 +23,20 @@ const loadProfile = async (didContractDeployed, addressAccount) => {
     const profile = await didContractDeployed.retrieve({from: addressAccount})
     const imgCount = await didContractDeployed.getImageCount()
     const posts = [];
-    for (var i = 0; i <= imgCount; i++) {
+    for (var i = 0; i < imgCount; i++) {
+        console.log('IMGCOUNT',parseInt(imgCount))
         let image = await didContractDeployed.imageMap(i)
-        let comments = await didContractDeployed.getAllCommentsOfImage(i)
-        image.comments = comments
+        let commentCount = image.commentCount
+        console.log('COMMENTCOUNT',parseInt(commentCount))
+        for (var j = 0; j < commentCount; j++) {
+            let {comment,author} = await didContractDeployed.getComment(i,j)
+            console.log('COMMENT',comment,author)
+        }
+        
         posts.push(image)
+
     }
+    console.log(posts)
     return {certificates,profile,posts}
     
 }

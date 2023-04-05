@@ -11,10 +11,11 @@ export const loadUserProfile = async (privateKey,userAddress) => {
     return {didContractDeployed,certificates,profile}
 }
 
-export const approvedCertificate = async (privateKey,userAddress,certificateId) => {
+export const approvedCertificate = async (privateKey,userAddress,index) => {
     await loadWeb3(privateKey)
     const {didContractDeployed} = await loadContract(userAddress)
-    await didContractDeployed.approveCertificate(certificateId,{from:userAddress})
+    await didContractDeployed.approveCertificate(userAddress,index)
+    return true
 }
 
 const loadProfile = async (didContractDeployed, addressAccount) => {

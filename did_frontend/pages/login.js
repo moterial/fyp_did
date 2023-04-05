@@ -33,6 +33,7 @@ export default function Login() {
   const [faceLoginClicked, setFaceLoginClicked] = useState(null);
   const [registerFace, setRegisterFace] = useState(false);
   const [faceImage, setFaceImage] = useState(null);
+  const [faceDescriptor, setFaceDescriptor] = useState(null);
   const faceMatcherRef = useRef(null);
 
   useEffect(() => {
@@ -118,7 +119,9 @@ export default function Login() {
     const btn = document.getElementById('faceLoginClicked')
     btn.disabled = true
     if(faceLogin && username != ''){
-        const imgBlob = await fetch('/api/user/faceid/', {
+          let imgBlob;
+          let faceDescriptor;
+          await fetch('/api/user/faceid/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -127,7 +130,10 @@ export default function Login() {
             body: JSON.stringify({
               username: username  
             })
-          }).then((res) => res.blob());
+          }).then((res) => {
+            imgBlob = res.data.blob()
+            faceDescriptor = res.faceDescriptor
+          });
           
           const img = new Image();
           img.src = URL.createObjectURL(imgBlob);
@@ -382,6 +388,7 @@ export default function Login() {
       formData.append('phone', regPhone);
       formData.append('bios', regBios);
       formData.append('password', regPassword);
+      formData.append('faceDescriptor', faceDescriptor);
 
       fetch('/api/user/register', {
         method: 'POST',
@@ -449,12 +456,16 @@ export default function Login() {
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
     
         // detect the face in the canvas
-        const detection = await faceapi.detectSingleFace(canvas);
+        const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
+        
+        if (detection) {
+          const faceDescriptor = detections.descriptor;
+          console.log(faceDescriptor);
+          setFaceDescriptor(faceDescriptor)
+          const dataURL = canvas.toDataURL();
+          setFaceImage(dataURL)
+        }
 
-        // convert the canvas to a data URL and store it in state
-        const dataURL = canvas.toDataURL();
-        setFaceImage(dataURL)
-  
     
         // stop the video stream
         if (stream && stream.getTracks) {

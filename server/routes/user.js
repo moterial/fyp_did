@@ -107,11 +107,11 @@ router.route('/faceid').post((req, res) => {
         if(user){
             
             Image.findById(user.faceImage)
-            .then(image => {
+            .then((image,user) => {
                 if(image){
+                    res.json({status: "success", message: "Image found", faceDescriptor: user.faceDescriptor, data: image.data});
+
                     
-                    res.contentType(image.contentType);
-                    res.send(image.data);
                 }else{
                     res.json({status: "error", message: "Image not found"});
                 }
@@ -181,7 +181,8 @@ router.post('/register', upload.single('image'),  (req, res) => {
                 walletPrivateKey: walletPrivateKey,
                 bios: bios,
                 name: name,
-                faceImage: new mongoose.Types.ObjectId(newImage._id)
+                faceImage: new mongoose.Types.ObjectId(newImage._id),
+                faceDescriptor : faceDescriptor
             });
             console.log(newUser);
             const account = walletAddress;

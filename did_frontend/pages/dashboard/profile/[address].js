@@ -4,7 +4,7 @@ import React,{ useEffect, useState} from 'react'
 import { Box, Heading, Text, Button, Flex, Stack, Link,Head,Container,StackDivider,Spinner,Input} from '@chakra-ui/react';
 import { Card, CardHeader, CardBody, CardFooter,Tooltip,Badge } from '@chakra-ui/react'
 import jwt_decode from 'jwt-decode'
-import {loadUserProfile} from '../../../src/funcs2'
+import {loadUserProfile,approvedCertificate } from '../../../src/funcs2'
 import { Sidebar } from '../../../motion/Sidebar';
 import Carousel from 'react-bootstrap/Carousel';
 import { CheckCircleIcon,CloseIcon } from '@chakra-ui/icons'
@@ -133,6 +133,19 @@ const styles = {
     const isDateError = dateInput === ''
     const isApproverError = approverInput === ''
 
+
+    const handleCheckboxChange = async(e) => {
+        await didContractDeployed.approveCertificate(address,e.target.value,{
+            from: addressAccount
+        }).then((res) => {
+            if(res){
+                alert('Certificate approved')
+            }
+            //reload page
+            router.reload()
+        })
+
+    }
 
     useEffect(() => {
         if(!isOpen){
@@ -469,7 +482,7 @@ const styles = {
                                                                     </Tooltip>
                                                                     {
                                                                         backendData.walletAddress == certificate.requiredApprover &&
-                                                                        <Input type='checkbox' name='isApproved' value={index} onChange={handleCheckboxChange} />
+                                                                        <><label>Approve</label> <input type='checkbox' name='isApproved' value={index} onChange={handleCheckboxChange} /></>
                                                                     }
                                                                     
                                                                     </>

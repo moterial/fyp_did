@@ -50,6 +50,7 @@ export default function Home() {
     const [addressAccount, setAddressAccount] = useState('')
     const [didContractDeployed, setDidContractDeployed] = useState('')
     const [certificates, setCertificates] = useState()
+    const [approveList, setApproveList] = useState()
     const [posts, setPosts] = useState()
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -188,6 +189,7 @@ export default function Home() {
                         setDidContractDeployed(data.didContractDeployed)
                         //remove the last element of the array
                         setCertificates(certificate)
+
                         })
                 }else{
                     localStorage.removeItem('token')
@@ -196,6 +198,19 @@ export default function Home() {
             })
         }
       }, [])
+
+      useEffect(() => {
+        if(didContractDeployed){
+            //get approveList 
+            didContractDeployed.approveListMapping(addressAccount).then((data) => {
+                console.log(data[0])
+                setApproveList(data)
+            })
+
+        }
+
+
+      }, [didContractDeployed])
 
       useEffect(() => {
         if(isMenuOpen){
@@ -404,24 +419,28 @@ export default function Home() {
                 </div>
 
                 <div className="account bg-dark col-4" style={styles.account} id='account'>
+                    <h1 className='text-center text-primary fw-bolder mt-3'>Required Approver List (Click to approve)</h1>
+                    { 
+                        //loop the approveList and display the list of approved users
+                        approveList && approveList.map((user) => {
+                           return(
+                                //see if the user is approved, if not display the approve button
+                                user.isApproved ? (
+                                    <></>
+                                ) : (
+                                    <div className='mt-3'>
+                                        
+                                        <Alert status='warning'>                
+                                            <AlertIcon />
+                                            <a href={`/dashboard/profile/${user.applyer}`} target='_blank' >{user.applyer}</a>
+                                        </Alert>
+                                    </div>
+                                )
+                           )
                     
-                    {/* <div className="col" >
-                        <Flex direction="column" align="center"  h="100%" gap='4' >
+                        })
 
-                            <div className = "bg-white ">
-                                
-                            </div>
-
-
-                            <div className = "bg-white postBg" style={styles.postBg}  align="center" >
-                                <ImagePost />
-                            </div>
-
-                            <div className = "bg-white postBg" style={styles.postBg}  align="center" >
-                                <ImagePost />
-                            </div>
-                        </Flex>
-                    </div> */}
+                    }
 
 
 

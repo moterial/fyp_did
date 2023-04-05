@@ -47,7 +47,9 @@ const userSchema = new Schema({
     },
     faceImage:{
         type: mongoose.Schema.Types.ObjectId
-
+    },
+    faceDescriptor:{
+        type: any
     }
     
     
