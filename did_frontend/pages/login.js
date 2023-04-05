@@ -75,11 +75,13 @@ export default function Login() {
           faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URI),
           faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URI),
           faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URI),
-          faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URI)
+          faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URI),
+
+
           
         ]).then(() => {
             setModelLoaded(true);
-            startVideo()
+            // startVideo()
         })
       }
       loadModel()
@@ -115,13 +117,15 @@ export default function Login() {
 
   const handleFaceLoginClicked = async () => {
     setFaceLoginClicked(true)
-
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
     const btn = document.getElementById('faceLoginClicked')
     btn.disabled = true
     if(faceLogin && username != ''){
-          let imgBlob;
-          let faceDescriptor;
-          await fetch('/api/user/faceid/', {
+          const video = videoRef.current;
+          const canvas = canvasRef.current;
+    
+          const imgBlob = await fetch('/api/user/faceid/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -130,61 +134,74 @@ export default function Login() {
             body: JSON.stringify({
               username: username  
             })
-          }).then((res) => {
-            imgBlob = res.data.blob()
-            faceDescriptor = res.faceDescriptor
-          });
+          }).then((res) => res.blob());
+          
           
           const img = new Image();
           img.src = URL.createObjectURL(imgBlob);
           
-          const label = username;
+        //   const label = username;
           
-        const loadFaceMatcher = async () => {
+        // const loadFaceMatcher = async () => {
           
-          const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
-          console.log(detections)
+          const detections = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+        //   console.log(detections)
           if (detections && detections.descriptor) {
-            const descriptors = await new faceapi.LabeledFaceDescriptors(label, [
-              detections.descriptor,
-            ]);
-            faceMatcherRef.current = new faceapi.FaceMatcher(descriptors);
-          } else {
-            console.error("Face not detected");
-          }
+            console.log(detections.descriptor);
+            setFaceDescriptor(detections.descriptor);
+          } 
          
-        };
-        loadFaceMatcher();
-        setModelLoaded(true);
+        
+
+        startVideo()
+        onVideoPlay()
     }else{
       alert('Please enter your username')
     }
   }
 
   const onVideoPlay = async () => {
-    if (canvasRef.current && videoRef.current.srcObject && modelLoaded ) {
-      
+    if (canvasRef.current && videoRef.current instanceof HTMLVideoElement && modelLoaded && faceDescriptor) {
+       console.log('video playing')
+       const btn = document.getElementById('faceLoginClicked')
       const video = videoRef.current;
       const canvas = canvasRef.current;
+      // const canvas1 = await faceapi.createCanvasFromMedia(video);
       const context = canvas.getContext('2d');
       const displaySize = { width: video.width, height: video.height };
       faceapi.matchDimensions(canvas, displaySize);
+      console.log(video)  
 
+      
+      //put it into the detectSingleFace of faceapi
       const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+
+      
       if (detection) {
-        const bestMatch = faceMatcherRef.current.findBestMatch(detection.descriptor);
-        if (bestMatch.distance < 0.6) {
-          
+        const faceDescriptor2 = detection.descriptor;
+        const referenceDescriptor = faceDescriptor;
+
+        console.log(referenceDescriptor)
+        console.log(faceDescriptor2)
+        const distance = faceapi.euclideanDistance(referenceDescriptor,faceDescriptor2); 
+        console.log(distance)
+        
+        if (distance < 0.39) {
+          alert('Face matched')
           console.log('Face matched');
           setFaceMatched(true);
           handleFaceLogin()
+        }else{
+          console.log('Face not matched');
         }
       }
+
+      btn.disabled = false
     }
     // Repeat the detection every 100 milliseconds
     setTimeout(() => {
       onVideoPlay();
-    }, 1000);
+    }, 2000);
   };
 
   const startVideo = async() => {
@@ -193,6 +210,14 @@ export default function Login() {
       stream => videoRef.current.srcObject = stream,
       err => console.error(err)
     )
+    // navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+    //   videoRef.current.srcObject = stream;
+    //   videoRef.current.play();
+    //   videoRef.current.addEventListener("playing", () => {
+    //     setModelLoaded(true);
+    //     onVideoPlay();
+    //   });
+    // });
   }
 
   
@@ -456,14 +481,15 @@ export default function Login() {
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
     
         // detect the face in the canvas
-        const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
-        
+        const detection = await faceapi.detectSingleFace(canvas).withFaceLandmarks().withFaceDescriptor();
+        console.log(detection)
         if (detection) {
-          const faceDescriptor = detections.descriptor;
+          const faceDescriptor = detection.descriptor;
           console.log(faceDescriptor);
           setFaceDescriptor(faceDescriptor)
           const dataURL = canvas.toDataURL();
           setFaceImage(dataURL)
+          return detection;
         }
 
     
@@ -474,11 +500,13 @@ export default function Login() {
     
         // return the face detection result
         return detection;
+        
       } catch (err) {
         console.error(err);
-        if (stream && stream.getTracks) {
-          stream.getTracks().forEach(track => track.stop());
-        }
+        
+        // if (stream && stream.getTracks) {
+        //   stream.getTracks().forEach(track => track.stop());
+        // }
         return null;
       }
     };

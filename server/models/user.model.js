@@ -49,7 +49,7 @@ const userSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId
     },
     faceDescriptor:{
-        type: any
+        type: Array
     }
     
     

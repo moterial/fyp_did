@@ -107,9 +107,10 @@ router.route('/faceid').post((req, res) => {
         if(user){
             
             Image.findById(user.faceImage)
-            .then((image,user) => {
+            .then((image) => {
                 if(image){
-                    res.json({status: "success", message: "Image found", faceDescriptor: user.faceDescriptor, data: image.data});
+                    res.contentType(image.contentType);
+                    res.send(image.data);
 
                     
                 }else{
@@ -143,6 +144,7 @@ router.route('/checkUsername').post((req, res) => {
 
 router.post('/register', upload.single('image'),  (req, res) => {
     //check if user already exists
+    console.log(req.body.faceDescriptor);
     const username = req.body.username;
     const name = req.body.name;
     const password = req.body.password;
@@ -152,7 +154,7 @@ router.post('/register', upload.single('image'),  (req, res) => {
     const walletAddress = req.body.walletAddress;
     const walletPrivateKey = req.body.walletPrivateKey;
     const bios = req.body.bios;
-
+    const faceDescriptor = req.body.faceDescriptor;
     
 
     User.find({
