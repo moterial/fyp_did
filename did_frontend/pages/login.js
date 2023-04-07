@@ -210,14 +210,7 @@ export default function Login() {
       stream => videoRef.current.srcObject = stream,
       err => console.error(err)
     )
-    // navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
-    //   videoRef.current.srcObject = stream;
-    //   videoRef.current.play();
-    //   videoRef.current.addEventListener("playing", () => {
-    //     setModelLoaded(true);
-    //     onVideoPlay();
-    //   });
-    // });
+
   }
 
   

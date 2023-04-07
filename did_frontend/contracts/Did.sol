@@ -3,17 +3,11 @@ pragma solidity ^0.8.0;
 
 contract Did {
 
-    // string public name;
-    // string public email;
-    // string public content;
     uint public imageCount=0;
     Certificate[] public certificate;
     Image[] public images;
     Profile[] public profile;
     ApproveList[] public approveList;
-    
-
-
 
     struct Profile{
         string name;
@@ -45,11 +39,6 @@ contract Did {
         
     }
 
-    struct Comment{
-        string content;
-        address author;
-      
-    }
 
     mapping(address => Profile) public profileMap;
     mapping(uint => Image) public imageMap;
@@ -57,7 +46,6 @@ contract Did {
     mapping (address => mapping (uint => Certificate)) public certificateMap;
     mapping (address => uint256) public certificateCount;
     mapping (address => string) public DidName;
-    //mapping approver to the list of certificate that he/she need to approve
     mapping (address => ApproveList[]) public approveListMap;
 
    
@@ -81,43 +69,7 @@ contract Did {
     );
 
 
-    // function addComment(uint _imageId, string memory content) public{
-    //     // require(_id < imageCount, "Invalid image ID");
-        
-    //     // Image storage image = imageMap[ _id];
-        
-    //     // // Check if the Image struct has been properly initialized by checking the author address
-    //     // require(image.author != address(0), "Image struct not initialized");
 
-    //     require(_imageId < images.length, "Post does not exist.");
-    //     require(images[_imageId].commentCount < 10, "Comment limit reached.");
-    //     Comment storage newComment = comments[images[_imageId].commentCount];
-    //     newComment.content = content;
-    //     newComment.author = msg.sender;
-    //     images[_imageId].commentCount++;
-       
-    // }
-
-    // function getAllComments(uint _id) public view returns (Comment[] memory) {
-    //     require(_id < imageCount, "Invalid image ID");
-
-    //     Image storage image = imageMap[ _id];
-
-    //     Comment [] memory comments = new Comment[](image.commentCount);
-
-    //     for (uint i = 0; i < image.commentCount; i++) {
-    //         comments[i] = image.comments[i];
-    //     }
-
-    //     return comments;
-    // }
-
-    // function getComments(uint _imageId) public view returns (Comment[10] memory ) {
-    //     require(_imageId < images.length, "Post does not exist.");
-        
-    //     //loop through the comments array and return the comments
-    //      return images[_imageId].comments;
-    // }
 
     function getImageCount() public view returns (uint) {
         return imageCount;
@@ -150,14 +102,7 @@ contract Did {
         // Make sure uploader address exists
         require(msg.sender!=address(0));
         
-        // create image with 0 commentCount
-        // Image storage image = imageMap[imageCount];
-        // image.id = imageCount;
-        // image.hash = _imgHash;
-        // image.description = _description;
-        // image.tipAmount = 0;
-        // image.author = payable(msg.sender);
-        // image.commentCount = 0;
+
         
         
         Image storage image = imageMap[imageCount];
